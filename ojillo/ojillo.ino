@@ -5,8 +5,9 @@ const int echoPin1  = 9 ;
 const int trigPin2  = 10 ;
 const int echoPin2  = 11 ;
 const int maxCount  = 5;
-const int LED_RED   = 7;
-const int LED_GREEN = 6;
+const int LED_RED   = 4
+;
+const int LED_GREEN = 3;
 long durationInt ;
 long durationOut ;
 int distanceInt ;
@@ -102,7 +103,7 @@ void countPerson (){
     delay(20);
     aforoState = 1;
   } else{
-    myServo.write(40);
+    myServo.write(0);
     delay(20);
     digitalWrite(LED_GREEN,HIGH);
     delay(20);
