@@ -1,20 +1,25 @@
 #include <Servo.h>. 
 
+Servo myServo1; 
+Servo myServo2; 
 const int trigPin1  = 8 ;
 const int echoPin1  = 9 ;
 const int trigPin2  = 10 ;
 const int echoPin2  = 11 ;
 const int maxCount  = 5;
-const int LED_RED   = 4
-;
-const int LED_GREEN = 3;
+const int LED_RED   = 7;
+const int LED_GREEN = 6;
+const int LR= 0;
 long durationInt ;
 long durationOut ;
 int distanceInt ;
 int distanceOut ;
 int contador = 0;
 bool aforoState = 0;
-Servo myServo; 
+bool securityState = 0;  
+int maxDistance = 100;   //cm
+int minDistance = 20;    //cm
+int waitingTime = 1300;  //ms
 
 
 void setup(){
@@ -25,22 +30,35 @@ void setup(){
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
   Serial.begin(9600);
-  myServo.attach(12);
+  myServo1.attach(12);
+  myServo2.attach(13);
 }
 
 void loop(){
-  Serial.print("Hay ");
-  Serial.print(contador);
-  Serial.print(" personas u.u");
-  Serial.println("");
-
-  delay(20);
-  countPerson();
-  delay(20);
-  intPerson();
-  delay(20);
-  outPerson();
-  delay(20);
+  int ledValue = analogRead(LR);
+  if (ledValue >= 500) {
+    securityState = 1;
+  } else {
+    securityState = 0;
+  }
+  if (securityState) {
+    Serial.print("Hay ");
+    Serial.print(contador);
+    Serial.print(" personas u.u");
+    Serial.println("");
+    delay(20);
+    countPerson();
+    delay(20);
+    intPerson();
+    delay(20);
+    outPerson();
+    delay(20);
+  } else {
+    Serial.println("///////ALERTA///////");
+    delay(20);
+    myServo1.write(0);
+    myServo2.write(0);
+    }
 }
 
 int calculateDistanceInt(){ 
@@ -66,10 +84,12 @@ int calculateDistanceOut(){
 }
 
 void intPerson(){
-  if (calculateDistanceInt() <= 150){
+  if (calculateDistanceInt() <= maxDistance && !aforoState){
     Serial.println("Hay alguien blo");
-    delay(1300);
-    if (calculateDistanceInt()<= 50 && !aforoState){
+    delay(20);
+    myServo1.write(90);
+    delay(waitingTime);
+    if (calculateDistanceInt()<= minDistance){
       Serial.println("Pasó 1 persona");
       delay(200);
       contador += 1;
@@ -79,10 +99,12 @@ void intPerson(){
 }
 
 void outPerson(){
-  if (calculateDistanceOut() <= 150){
+  if (calculateDistanceOut() <= maxDistance){
     Serial.println("Va a salir alguien blo");
-    delay(1300);
-    if (calculateDistanceOut() <= 50){
+    delay(0);
+    myServo2.write(90);
+    delay(waitingTime);
+    if (calculateDistanceOut() <= minDistance){
       Serial.println("Salió 1 persona");
       delay(200);
       contador -= 1;
@@ -94,7 +116,8 @@ void outPerson(){
 void countPerson (){
   if (contador == maxCount){
     delay(20);
-    myServo.write(40);
+    myServo1.write(0);
+    myServo2.write(0);
     Serial.println("Aforo a full capacidad");
     delay(20);
     digitalWrite(LED_RED,HIGH);
@@ -103,8 +126,6 @@ void countPerson (){
     delay(20);
     aforoState = 1;
   } else{
-    myServo.write(0);
-    delay(20);
     digitalWrite(LED_GREEN,HIGH);
     delay(20);
     digitalWrite(LED_RED,LOW);
