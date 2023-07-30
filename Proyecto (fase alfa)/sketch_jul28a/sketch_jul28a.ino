@@ -50,7 +50,7 @@ void setup(){
 
 void loop(){
   int lightRValue = analogRead(LDR);
-  Serial.println(lightRValue);
+//  Serial.println(lightRValue);
   if (lightRValue >= 550) {
     securityState = 1;
   } else {
@@ -108,6 +108,7 @@ void intPerson(){
     float securityDistance = doorWidth + securityRange + 1.5;
     float avSpeedInt = 0;
     while (generalDistance < securityDistance){
+      delay(20);
       float distance1 = calculateDistanceInt();
       delay(300);
       float distance2 = calculateDistanceInt();
@@ -117,7 +118,8 @@ void intPerson(){
         relativeDistance = distance2;
       } else{
         intState = 0;
-        generalDistance = securityDistance;
+        Serial.println("No pasó...");
+        generalDistance = securityDistance + 1;
       }
     }
     if (intState){
@@ -158,20 +160,29 @@ void outPerson(){
     float securityDistance = doorWidth + securityRange;
     float avSpeedOut = 0;
     while (generalDistance < securityDistance){
+      delay(20);
       float distance1 = calculateDistanceOut();
       delay(300);
       float distance2 = calculateDistanceOut();
+      Serial.println("Estadio 1");
+      Serial.println(distance1);
+      Serial.println(distance2);
+
       if (distance1 < distance2){
         avSpeedOut = (distance1 + distance2)/0.3;
         outState = 1;
+        Serial.println("Estadio 2");
         relativeDistance = distance2;
-      } else{
+      } else {
         outState = 0;
-        generalDistance = securityDistance;
+        Serial.println("Estadio muerte");
+        Serial.println("No salió...");
+        generalDistance = securityDistance + 1;
       }
     }
     if (outState){
       float securitySpace = doorWidth + securityRange;
+      delay(20);
       float spaceConfirm = calculateDistanceInt()*sin(angleRad);
       while (spaceConfirm < securitySpace){
         digitalWrite(LED_WHITE, HIGH);
