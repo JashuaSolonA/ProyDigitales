@@ -10,6 +10,8 @@ const int maxCount  = 5;
 const int LED_RED   = 7;
 const int LED_GREEN = 6;
 const int LR= 0;
+const int closeAngle = 0;
+const int openAngle = 90;
 long durationInt ;
 long durationOut ;
 int distanceInt ;
@@ -31,7 +33,6 @@ void setup(){
   pinMode(LED_GREEN, OUTPUT);
   Serial.begin(9600);
   myServo1.attach(12);
-//  myServo2.attach(13);
 }
 
 void loop(){
@@ -42,26 +43,25 @@ void loop(){
   } else {
     securityState = 0;
   }
-  myServo1.write(85);
-  //myServo2.write(0);
   if (securityState) {
     Serial.print("Hay ");
     Serial.print(contador);
-    Serial.print(" personas u.u");
+    Serial.print(" personas");
     Serial.println("");
     delay(20);
     countPerson();
     delay(20);
-    intPerson();
-    delay(20);
     outPerson();
+    delay(20);
+    intPerson();
     delay(20);
   } else {
     Serial.println("///////ALERTA///////");
-    delay(20);
+    delay(2000);
     digitalWrite(LED_RED,LOW);
     digitalWrite(LED_GREEN,LOW);
-    }
+    myServo1.write(closeAngle);
+  }
 }
 
 int calculateDistanceInt(){ 
@@ -88,30 +88,46 @@ int calculateDistanceOut(){
 
 void intPerson(){
   if (calculateDistanceInt() <= maxDistance && !aforoState){
-    Serial.println("Hay alguien blo");
+    Serial.println("Entrando...");
     delay(20);
-    myServo1.write(0);
+    myServo1.write(openAngle);
     delay(waitingTime);
     if (calculateDistanceInt()<= minDistance){
-      Serial.println("Pasó 1 persona");
-      delay(200);
-      contador += 1;
-      delay(20);
+      delay(waitingTime/2);
+      if (calculateDistanceOut()<= minDistance){
+        Serial.println("Pasó 1 persona");
+        contador += 1;
+        delay(20);        
+      } else {
+        myServo1.write(closeAngle);
+        Serial.println("No entró...");
+      } 
+    } else {
+      myServo1.write(closeAngle);
+      Serial.println("No entró...");
     }
   }
 }
 
 void outPerson(){
   if (calculateDistanceOut() <= maxDistance){
-    Serial.println("Va a salir alguien blo");
-    delay(0);
-    myServo1.write(170);
+    Serial.println("Saliendo...");
+    delay(20);
+    myServo1.write(openAngle);
     delay(waitingTime);
-    if (calculateDistanceOut() <= minDistance){
-      Serial.println("Salió 1 persona");
-      delay(200);
-      contador -= 1;
-      delay(20);
+    if (calculateDistanceOut()<= minDistance){
+      delay(waitingTime/2);
+      if (calculateDistanceInt()<= minDistance){
+        Serial.println("Salió 1 persona");
+        contador -= 1;
+        delay(20);        
+      } else {
+        myServo1.write(closeAngle);
+        Serial.println("No salió...");
+      } 
+    } else {
+      myServo1.write(closeAngle);
+      Serial.println("No salió...");
     }
   }
 }
@@ -119,8 +135,7 @@ void outPerson(){
 void countPerson (){
   if (contador == maxCount){
     delay(20);
-    myServo1.write(85);
-//    myServo2.write(0);
+    myServo1.write(closeAngle);
     Serial.println("Aforo a full capacidad");
     delay(20);
     digitalWrite(LED_RED,HIGH);
