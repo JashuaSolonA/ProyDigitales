@@ -20,8 +20,8 @@ int contador = 0;
 bool aforoState = 0;
 bool securityState = 0;  
 int maxDistance = 15;   //cm
-int minDistance = 5;    //cm
-int waitingTime = 1300;  //ms
+int minDistance = 8;    //cm
+int waitingTime = 2000;  //ms
 
 
 void setup(){
@@ -38,12 +38,13 @@ void setup(){
 void loop(){
   int ledValue = analogRead(LR);
   Serial.println(ledValue);
-  if (ledValue >= 550) {
+  if (ledValue >= 300) {
     securityState = 1;
   } else {
     securityState = 0;
   }
   if (securityState) {
+    myServo1.write(0);
     Serial.print("Hay ");
     Serial.print(contador);
     Serial.print(" personas");
@@ -52,9 +53,9 @@ void loop(){
     countPerson();
     delay(20);
     outPerson();
-    delay(20);
+    delay(500);
     intPerson();
-    delay(20);
+    delay(500);
   } else {
     Serial.println("///////ALERTA///////");
     delay(2000);
@@ -92,43 +93,38 @@ void intPerson(){
     delay(20);
     myServo1.write(openAngle);
     delay(waitingTime);
-    if (calculateDistanceInt()<= minDistance){
-      delay(waitingTime/2);
-      if (calculateDistanceOut()<= minDistance){
-        Serial.println("Pasó 1 persona");
-        contador += 1;
-        delay(20);        
-      } else {
-        myServo1.write(closeAngle);
-        Serial.println("No entró...");
-      } 
+    myServo1.write(closeAngle);
+    delay(waitingTime);
+    int distance1 = calculateDistanceOut();
+    Serial.println(distance1);
+    if (22>=distance1 & distance1>= minDistance){
+      Serial.println("Pasó 1 persona");
+      contador += 1;
+      delay(20);        
     } else {
-      myServo1.write(closeAngle);
       Serial.println("No entró...");
-    }
+    } 
   }
 }
 
 void outPerson(){
-  if (calculateDistanceOut() <= maxDistance){
+  if (calculateDistanceOut() <= maxDistance-5){
     Serial.println("Saliendo...");
     delay(20);
     myServo1.write(openAngle);
     delay(waitingTime);
-    if (calculateDistanceOut()<= minDistance){
-      delay(waitingTime/2);
-      if (calculateDistanceInt()<= minDistance){
-        Serial.println("Salió 1 persona");
-        contador -= 1;
-        delay(20);        
-      } else {
-        myServo1.write(closeAngle);
-        Serial.println("No salió...");
-      } 
+    myServo1.write(closeAngle);
+    delay(waitingTime);
+    int distance2 = calculateDistanceInt();
+    Serial.println(distance2);
+    if (22>=distance2 & distance2>=12){
+      Serial.println("Salió 1 persona");
+      contador -= 1;
+      delay(20);        
     } else {
       myServo1.write(closeAngle);
       Serial.println("No salió...");
-    }
+    } 
   }
 }
 
